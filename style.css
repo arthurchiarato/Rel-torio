@@ -1,89 +1,141 @@
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f0f4f8;
-        }
-        
-        .card {
-            transition: all 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .print-button {
-            transition: all 0.2s ease;
-        }
-        
-        .print-button:hover {
-            background-color: #1e40af;
-        }
-        
-        @media print {
-            .no-print {
-                display: none;
-            }
-            
-            body {
-                background-color: white;
-            }
-            
-            .container {
-                max-width: 100% !important;
-                width: 100% !important;
-            }
-            
-            input, select {
-                border: none !important;
-            }
-            
-            .input-container {
-                border: none !important;
-            }
-        }
-        
-        input:focus, select:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-        }
-        
-        .input-container {
-            transition: all 0.2s ease;
-        }
-        
-        .input-container:focus-within {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-        }
-        
-        .tooltip {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 200px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -100px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
-        }
-        
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f0f4f8;
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.print-button {
+    transition: all 0.2s ease;
+}
+
+.print-button:hover {
+    background-color: #1e40af;
+}
+
+@media print {
+    /* Esconder elementos que não devem aparecer na impressão */
+    .no-print {
+        display: none;
+    }
+
+    /* Garantir que o fundo da página seja branco */
+    body {
+        background-color: white;
+        color: #000; /* Cor do texto para garantir boa legibilidade */
+    }
+
+    /* Garantir que a largura da página de impressão seja correta */
+    .container {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    /* Ajustar os inputs e selects */
+    input, select {
+        border: none !important;
+        background-color: transparent !important;
+        color: #000 !important; /* Garantir que o texto fique legível */
+    }
+
+    /* Ajustar os containers de inputs */
+    .input-container {
+        border: none !important;
+    }
+
+    /* Card de Resumo Geral e outros elementos */
+    .card {
+        border: 1px solid #ddd; /* Adicionando borda aos cards para impressão */
+        background-color: #fff !important; /* Garantir fundo branco */
+        color: #000 !important; /* Garantir que o texto dentro do card seja visível */
+    }
+
+    .card h3, .card p {
+        color: #000 !important; /* Garantir que os textos dentro dos cards sejam pretos */
+    }
+
+    /* Ajustes nas tabelas */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 8px;
+        border: 1px solid #ddd;
+        text-align: left;
+        color: #000 !important; /* Garantir que o texto na tabela seja visível */
+    }
+
+    th {
+        background-color: #f0f0f0;
+        font-weight: bold;
+    }
+
+    /* Remover efeitos hover e transições */
+    .card:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Ajustar o tamanho das fontes na impressão */
+    body {
+        font-size: 12pt;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        color: #000 !important;
+    }
+}
+
+/* Adicional - Cor do texto e foco nos inputs */
+input:focus, select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.input-container {
+    transition: all 0.2s ease;
+}
+
+.input-container:focus-within {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
