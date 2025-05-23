@@ -43,60 +43,61 @@
         }
 
         // Função para calcular e exibir os totais
-        function calculateTotals() {
-            let totalRevenue = 0;
-            let totalReturns = 0;
-            let totalOrders = 0;
-            
-            // Detalhes para os cards
-            let revenueDetails = [];
-            let returnsDetails = [];
-            let ordersDetails = [];
-            
-            // Calcular totais por CNPJ
-            data.cnpjs.forEach(cnpj => {
-                let cnpjRevenue = 0;
-                let cnpjReturns = 0;
-                let cnpjOrders = 0;
-                
-                cnpj.stores.forEach(store => {
-                    cnpjRevenue += parseFloat(store.revenue) || 0;
-                    cnpjReturns += parseFloat(store.returns) || 0;
-                    cnpjOrders += parseInt(store.orders) || 0;
-                });
-                
-                totalRevenue += cnpjRevenue;
-                totalReturns += cnpjReturns;
-                totalOrders += cnpjOrders;
-                
-                // Adicionar detalhes se o valor for significativo
-                if (cnpjRevenue > 0) {
-                    revenueDetails.push(`${cnpj.name}: ${formatCurrency(cnpjRevenue)}`);
-                }
-                if (cnpjReturns > 0) {
-                    returnsDetails.push(`${cnpj.name}: ${formatCurrency(cnpjReturns)}`);
-                }
-                if (cnpjOrders > 0) {
-                    ordersDetails.push(`${cnpj.name}: ${cnpjOrders}`);
-                }
-            });
-            
-            const netRevenue = totalRevenue - totalReturns;
-            
-            // Exibir totais
-            document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
-            document.getElementById('totalReturns').textContent = formatCurrency(totalReturns);
-            document.getElementById('netRevenue').textContent = formatCurrency(netRevenue);
-            document.getElementById('totalOrders').textContent = totalOrders.toLocaleString('pt-BR');
-            
-            // Exibir detalhes
-            document.getElementById('totalRevenueDetail').textContent = revenueDetails.slice(0, 2).join(' | ');
-            document.getElementById('totalReturnsDetail').textContent = returnsDetails.slice(0, 2).join(' | ');
-            document.getElementById('netRevenueDetail').textContent = `${Math.round((netRevenue/totalRevenue)*100)}% do faturamento bruto`;
-            document.getElementById('totalOrdersDetail').textContent = ordersDetails.slice(0, 2).join(' | ');
-            
-            return { totalRevenue, totalReturns, netRevenue, totalOrders };
+function calculateTotals() {
+    let totalRevenue = 0;
+    let totalReturns = 0;
+    let totalOrders = 0;
+    
+    // Detalhes para os cards (removendo os detalhes das lojas)
+    let revenueDetails = [];
+    let returnsDetails = [];
+    let ordersDetails = [];
+    
+    // Calcular totais por CNPJ
+    data.cnpjs.forEach(cnpj => {
+        let cnpjRevenue = 0;
+        let cnpjReturns = 0;
+        let cnpjOrders = 0;
+        
+        cnpj.stores.forEach(store => {
+            cnpjRevenue += parseFloat(store.revenue) || 0;
+            cnpjReturns += parseFloat(store.returns) || 0;
+            cnpjOrders += parseInt(store.orders) || 0;
+        });
+        
+        totalRevenue += cnpjRevenue;
+        totalReturns += cnpjReturns;
+        totalOrders += cnpjOrders;
+        
+        // Adicionar detalhes se o valor for significativo
+        if (cnpjRevenue > 0) {
+            revenueDetails.push(`${cnpj.name}: ${formatCurrency(cnpjRevenue)}`); // Mantendo apenas o total
         }
+        if (cnpjReturns > 0) {
+            returnsDetails.push(`${cnpj.name}: ${formatCurrency(cnpjReturns)}`); // Mantendo apenas o total
+        }
+        if (cnpjOrders > 0) {
+            ordersDetails.push(`${cnpj.name}: ${cnpjOrders}`); // Mantendo apenas o total
+        }
+    });
+    
+    const netRevenue = totalRevenue - totalReturns;
+    
+    // Exibir totais sem os detalhes da loja (apenas os valores principais)
+    document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
+    document.getElementById('totalReturns').textContent = formatCurrency(totalReturns);
+    document.getElementById('netRevenue').textContent = formatCurrency(netRevenue);
+    document.getElementById('totalOrders').textContent = totalOrders.toLocaleString('pt-BR');
+    
+    // Exibir detalhes (remover as lojas se não for necessário)
+    document.getElementById('totalRevenueDetail').textContent = ""; // Remover detalhes da loja
+    document.getElementById('totalReturnsDetail').textContent = ""; // Remover detalhes da loja
+    document.getElementById('netRevenueDetail').textContent = `${Math.round((netRevenue/totalRevenue)*100)}% do faturamento bruto`;
+    document.getElementById('totalOrdersDetail').textContent = ""; // Remover detalhes da loja
+    
+    return { totalRevenue, totalReturns, netRevenue, totalOrders };
+}
+
 
         // Função para preencher a tabela de CNPJs
         function populateCnpjTable() {
@@ -779,3 +780,15 @@
 
         // Inicializar o relatório quando a página carregar
         document.addEventListener('DOMContentLoaded', initReport);
+
+
+        // Função para formatar os valores como número com separador de milhar e vírgula para decimal
+            function formatNumber(value) {
+                return new Intl.NumberFormat('pt-BR').format(value);  // Padrão do Brasil
+
+
+                // Atualizar os valores no HTML com a formatação correta
+document.getElementById('totalRevenue').innerText = `R$ ${formatNumber(totalRevenue)}`;
+document.getElementById('totalReturns').innerText = `R$ ${formatNumber(totalReturns)}`;
+document.getElementById('netRevenue').innerText = `R$ ${formatNumber(netRevenue)}`;
+}
