@@ -22,48 +22,28 @@
             background-color: #1e40af;
         }
         
-       @media print {
-    .no-print {
-        display: none;
-    }
-    
-    body {
-        background-color: white;
-    }
-    
-    .container {
-        max-width: 100% !important;
-        width: 100% !important;
-    }
-
-    input, select {
-        border: none !important;
-    }
-
-    .input-container {
-        border: none !important;
-    }
-
-    /* Evitar quebra de página dentro das tabelas */
-    table {
-        page-break-inside: avoid;
-    }
-
-    /* Quebra de página para as seções de gráficos e tabelas */
-    .pedidos-loja,
-    .devolucoes-loja,
-    .detalhamento-loja,
-    .detalhamento-cnpj {
-        page-break-before: always;
-    }
-
-    /* Forçar quebra de linha após gráficos */
-    .h-80 {
-        page-break-after: always;
-    }
-
-}
-
+        @media print {
+            .no-print {
+                display: none;
+            }
+            
+            body {
+                background-color: white;
+            }
+            
+            .container {
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+            
+            input, select {
+                border: none !important;
+            }
+            
+            .input-container {
+                border: none !important;
+            }
+        }
         
         input:focus, select:focus {
             outline: none;
@@ -106,4 +86,3 @@
             visibility: visible;
             opacity: 1;
         }
-        
