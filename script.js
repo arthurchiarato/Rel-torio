@@ -1,14 +1,19 @@
-      // Estrutura de dados inicial
+        // Estrutura de dados inicial
         let data = {
             cnpjs: [],
-            stores: ["Shopee", "Shein", "Mercado Livre", "Magalu"]
+            stores: ["Shopee", "Shein", "Mercado Livre", "Magalu"],
+            cashFlow: {
+                previousPixBalance: 0,
+                monthlyIncome: 0,
+                monthlyExpenses: 0
+            }
         };
 
         // Variáveis para armazenar os gráficos
         let revenueByCnpjChart = null;
         let revenueByStoreChart = null;
         let ordersByStoreChart = null;
-        let returnsByStoreChart = null;
+        let returnsByCnpjChart = null;
 
         // Cores para os gráficos
         const chartColors = [
@@ -43,61 +48,69 @@
         }
 
         // Função para calcular e exibir os totais
-function calculateTotals() {
-    let totalRevenue = 0;
-    let totalReturns = 0;
-    let totalOrders = 0;
-    
-    // Detalhes para os cards (removendo os detalhes das lojas)
-    let revenueDetails = [];
-    let returnsDetails = [];
-    let ordersDetails = [];
-    
-    // Calcular totais por CNPJ
-    data.cnpjs.forEach(cnpj => {
-        let cnpjRevenue = 0;
-        let cnpjReturns = 0;
-        let cnpjOrders = 0;
-        
-        cnpj.stores.forEach(store => {
-            cnpjRevenue += parseFloat(store.revenue) || 0;
-            cnpjReturns += parseFloat(store.returns) || 0;
-            cnpjOrders += parseInt(store.orders) || 0;
-        });
-        
-        totalRevenue += cnpjRevenue;
-        totalReturns += cnpjReturns;
-        totalOrders += cnpjOrders;
-        
-        // Adicionar detalhes se o valor for significativo
-        if (cnpjRevenue > 0) {
-            revenueDetails.push(`${cnpj.name}: ${formatCurrency(cnpjRevenue)}`); // Mantendo apenas o total
+        function calculateTotals() {
+            let totalRevenue = 0;
+            let totalReturns = 0;
+            let totalOrders = 0;
+            
+            // Detalhes para os cards
+            let revenueDetails = [];
+            let returnsDetails = [];
+            
+            // Calcular totais por CNPJ
+            data.cnpjs.forEach(cnpj => {
+                let cnpjRevenue = 0;
+                let cnpjOrders = 0;
+                
+                cnpj.stores.forEach(store => {
+                    cnpjRevenue += parseFloat(store.revenue) || 0;
+                    cnpjOrders += parseInt(store.orders) || 0;
+                });
+                
+                const cnpjReturns = parseFloat(cnpj.returns) || 0;
+                
+                totalRevenue += cnpjRevenue;
+                totalReturns += cnpjReturns;
+                totalOrders += cnpjOrders;
+                
+                // Adicionar detalhes se o valor for significativo
+                if (cnpjRevenue > 0) {
+                    revenueDetails.push(`${cnpj.name}: ${formatCurrency(cnpjRevenue)}`);
+                }
+                if (cnpjReturns > 0) {
+                    returnsDetails.push(`${cnpj.name}: ${formatCurrency(cnpjReturns)}`);
+                }
+            });
+            
+            const netRevenue = totalRevenue - totalReturns;
+            
+            // Exibir totais
+            document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
+            document.getElementById('totalReturns').textContent = formatCurrency(totalReturns);
+            document.getElementById('netRevenue').textContent = formatCurrency(netRevenue);
+            
+            // Exibir detalhes
+            document.getElementById('totalRevenueDetail').textContent = revenueDetails.slice(0, 2).join(' | ');
+            document.getElementById('totalReturnsDetail').textContent = returnsDetails.slice(0, 2).join(' | ');
+            document.getElementById('netRevenueDetail').textContent = totalRevenue > 0 ? `${Math.round((netRevenue/totalRevenue)*100)}% do faturamento bruto` : '0% do faturamento bruto';
+            
+            // Calcular fluxo de caixa
+            const previousPixBalance = parseFloat(data.cashFlow.previousPixBalance) || 0;
+            const monthlyIncome = parseFloat(data.cashFlow.monthlyIncome) || 0;
+            const monthlyExpenses = parseFloat(data.cashFlow.monthlyExpenses) || 0;
+            
+            const cashFlow = monthlyIncome - monthlyExpenses;
+            const finalBalance = previousPixBalance + cashFlow;
+            
+            // Atualizar tabela de fluxo de caixa
+            document.getElementById('cashFlowPreviousBalance').textContent = formatCurrency(previousPixBalance);
+            document.getElementById('cashFlowIncome').textContent = formatCurrency(monthlyIncome);
+            document.getElementById('cashFlowExpenses').textContent = formatCurrency(monthlyExpenses);
+            document.getElementById('cashFlowNet').textContent = formatCurrency(cashFlow);
+            document.getElementById('cashFlowFinal').textContent = formatCurrency(finalBalance);
+            
+            return { totalRevenue, totalReturns, netRevenue, totalOrders, cashFlow, finalBalance };
         }
-        if (cnpjReturns > 0) {
-            returnsDetails.push(`${cnpj.name}: ${formatCurrency(cnpjReturns)}`); // Mantendo apenas o total
-        }
-        if (cnpjOrders > 0) {
-            ordersDetails.push(`${cnpj.name}: ${cnpjOrders}`); // Mantendo apenas o total
-        }
-    });
-    
-    const netRevenue = totalRevenue - totalReturns;
-    
-    // Exibir totais sem os detalhes da loja (apenas os valores principais)
-    document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
-    document.getElementById('totalReturns').textContent = formatCurrency(totalReturns);
-    document.getElementById('netRevenue').textContent = formatCurrency(netRevenue);
-    document.getElementById('totalOrders').textContent = totalOrders.toLocaleString('pt-BR');
-    
-    // Exibir detalhes (remover as lojas se não for necessário)
-    document.getElementById('totalRevenueDetail').textContent = ""; // Remover detalhes da loja
-    document.getElementById('totalReturnsDetail').textContent = ""; // Remover detalhes da loja
-    document.getElementById('netRevenueDetail').textContent = `${Math.round((netRevenue/totalRevenue)*100)}% do faturamento bruto`;
-    document.getElementById('totalOrdersDetail').textContent = ""; // Remover detalhes da loja
-    
-    return { totalRevenue, totalReturns, netRevenue, totalOrders };
-}
-
 
         // Função para preencher a tabela de CNPJs
         function populateCnpjTable() {
@@ -108,15 +121,14 @@ function calculateTotals() {
             
             data.cnpjs.forEach(cnpj => {
                 let cnpjRevenue = 0;
-                let cnpjReturns = 0;
                 let cnpjOrders = 0;
                 
                 cnpj.stores.forEach(store => {
                     cnpjRevenue += parseFloat(store.revenue) || 0;
-                    cnpjReturns += parseFloat(store.returns) || 0;
                     cnpjOrders += parseInt(store.orders) || 0;
                 });
                 
+                const cnpjReturns = parseFloat(cnpj.returns) || 0;
                 const cnpjNetRevenue = cnpjRevenue - cnpjReturns;
                 const percentOfTotal = totals.totalRevenue > 0 ? (cnpjRevenue / totals.totalRevenue * 100).toFixed(1) : 0;
                 
@@ -144,19 +156,15 @@ function calculateTotals() {
             data.cnpjs.forEach(cnpj => {
                 cnpj.stores.forEach(store => {
                     const revenue = parseFloat(store.revenue) || 0;
-                    const returns = parseFloat(store.returns) || 0;
                     const orders = parseInt(store.orders) || 0;
-                    const netRevenue = revenue - returns;
                     const ticketMedio = orders > 0 ? revenue / orders : 0;
                     
                     const row = document.createElement('tr');
                     row.className = 'border-b hover:bg-gray-50';
                     row.innerHTML = `
-                        <td class="py-3 px-4">${cnpj.id}</td>
+                        <td class="py-3 px-4">${cnpj.name}</td>
                         <td class="py-3 px-4">${store.name}</td>
                         <td class="py-3 px-4 text-right">${formatCurrency(revenue)}</td>
-                        <td class="py-3 px-4 text-right">${formatCurrency(returns)}</td>
-                        <td class="py-3 px-4 text-right">${formatCurrency(netRevenue)}</td>
                         <td class="py-3 px-4 text-right">${orders.toLocaleString('pt-BR')}</td>
                         <td class="py-3 px-4 text-right">${formatCurrency(ticketMedio)}</td>
                     `;
@@ -170,13 +178,11 @@ function calculateTotals() {
         function createRevenueByCnpjChart() {
             const ctx = document.getElementById('revenueByCnpjChart').getContext('2d');
             
-            const cnpjLabels = data.cnpjs.map(cnpj => cnpj.name);
+            const cnpjLabels = data.cnpjs.map(cnpj => cnpj.name || `CNPJ ${cnpj.id}`);
             const revenueData = data.cnpjs.map(cnpj => {
                 return cnpj.stores.reduce((total, store) => total + (parseFloat(store.revenue) || 0), 0);
             });
-            const returnsData = data.cnpjs.map(cnpj => {
-                return cnpj.stores.reduce((total, store) => total + (parseFloat(store.returns) || 0), 0);
-            });
+            const returnsData = data.cnpjs.map(cnpj => parseFloat(cnpj.returns) || 0);
             const netRevenueData = revenueData.map((revenue, index) => revenue - returnsData[index]);
             
             if (revenueByCnpjChart) {
@@ -224,16 +230,6 @@ function calculateTotals() {
                                     return context.dataset.label + ': ' + formatCurrency(context.raw);
                                 }
                             }
-                        },
-                        datalabels: {
-                            display: true,
-                            color: '#fff',
-                            font: {
-                                weight: 'bold'
-                            },
-                            formatter: function(value) {
-                                return formatCurrency(value);
-                            }
                         }
                     }
                 }
@@ -249,16 +245,14 @@ function calculateTotals() {
             data.cnpjs.forEach(cnpj => {
                 cnpj.stores.forEach(store => {
                     if (!storeData[store.name]) {
-                        storeData[store.name] = { revenue: 0, returns: 0 };
+                        storeData[store.name] = { revenue: 0 };
                     }
                     storeData[store.name].revenue += parseFloat(store.revenue) || 0;
-                    storeData[store.name].returns += parseFloat(store.returns) || 0;
                 });
             });
             
             const storeNames = Object.keys(storeData);
             const revenueData = storeNames.map(name => storeData[name].revenue);
-            const netRevenueData = storeNames.map(name => storeData[name].revenue - storeData[name].returns);
             
             if (revenueByStoreChart) {
                 revenueByStoreChart.destroy();
@@ -270,17 +264,10 @@ function calculateTotals() {
                     labels: storeNames,
                     datasets: [
                         {
-                            label: 'Faturamento Bruto',
+                            label: 'Faturamento',
                             data: revenueData,
                             backgroundColor: storeNames.map((_, i) => chartColors[i % chartColors.length]),
                             borderColor: storeNames.map((_, i) => chartColors[i % chartColors.length].replace('0.7', '1')),
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Faturamento Líquido',
-                            data: netRevenueData,
-                            backgroundColor: storeNames.map((_, i) => chartColors[(i + 5) % chartColors.length]),
-                            borderColor: storeNames.map((_, i) => chartColors[(i + 5) % chartColors.length].replace('0.7', '1')),
                             borderWidth: 1
                         }
                     ]
@@ -355,20 +342,9 @@ function calculateTotals() {
                                 label: function(context) {
                                     const value = context.raw;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
+                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
                                     return `${context.label}: ${value.toLocaleString('pt-BR')} pedidos (${percentage}%)`;
                                 }
-                            }
-                        },
-                        datalabels: {
-                            formatter: (value, ctx) => {
-                                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = Math.round((value / total) * 100);
-                                return percentage > 5 ? `${percentage}%` : '';
-                            },
-                            color: '#fff',
-                            font: {
-                                weight: 'bold'
                             }
                         }
                     }
@@ -376,43 +352,33 @@ function calculateTotals() {
             });
         }
 
-        // Função para criar o gráfico de devoluções por loja
-        function createReturnsByStoreChart() {
-            const ctx = document.getElementById('returnsByStoreChart').getContext('2d');
+        // Função para criar o gráfico de devoluções por CNPJ
+        function createReturnsByCnpjChart() {
+            const ctx = document.getElementById('returnsByCnpjChart').getContext('2d');
             
-            // Agrupar dados por loja
-            const storeData = {};
-            data.cnpjs.forEach(cnpj => {
-                cnpj.stores.forEach(store => {
-                    if (!storeData[store.name]) {
-                        storeData[store.name] = { returns: 0, revenue: 0 };
-                    }
-                    storeData[store.name].returns += parseFloat(store.returns) || 0;
-                    storeData[store.name].revenue += parseFloat(store.revenue) || 0;
-                });
+            const cnpjLabels = data.cnpjs.map(cnpj => cnpj.name || `CNPJ ${cnpj.id}`);
+            const returnsData = data.cnpjs.map(cnpj => parseFloat(cnpj.returns) || 0);
+            const revenueData = data.cnpjs.map(cnpj => {
+                return cnpj.stores.reduce((total, store) => total + (parseFloat(store.revenue) || 0), 0);
             });
-            
-            const storeNames = Object.keys(storeData);
-            const returnsData = storeNames.map(name => storeData[name].returns);
-            const returnsPercentage = storeNames.map(name => {
-                const revenue = storeData[name].revenue;
-                const returns = storeData[name].returns;
+            const returnsPercentage = returnsData.map((returns, i) => {
+                const revenue = revenueData[i];
                 return revenue > 0 ? (returns / revenue) * 100 : 0;
             });
             
-            if (returnsByStoreChart) {
-                returnsByStoreChart.destroy();
+            if (returnsByCnpjChart) {
+                returnsByCnpjChart.destroy();
             }
             
-            returnsByStoreChart = new Chart(ctx, {
+            returnsByCnpjChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: storeNames,
+                    labels: cnpjLabels,
                     datasets: [
                         {
                             data: returnsData,
-                            backgroundColor: storeNames.map((_, i) => chartColors[i % chartColors.length]),
-                            borderColor: storeNames.map((_, i) => chartColors[i % chartColors.length].replace('0.7', '1')),
+                            backgroundColor: cnpjLabels.map((_, i) => chartColors[i % chartColors.length]),
+                            borderColor: cnpjLabels.map((_, i) => chartColors[i % chartColors.length].replace('0.7', '1')),
                             borderWidth: 1
                         }
                     ]
@@ -442,6 +408,7 @@ function calculateTotals() {
             const newCnpj = {
                 id: "",
                 name: "",
+                returns: 0,
                 stores: []
             };
             
@@ -450,7 +417,6 @@ function calculateTotals() {
                 newCnpj.stores.push({
                     name: storeName,
                     revenue: 0,
-                    returns: 0,
                     orders: 0
                 });
             });
@@ -480,7 +446,7 @@ function calculateTotals() {
             
             // Campos de entrada para ID e nome do CNPJ
             const infoDiv = document.createElement('div');
-            infoDiv.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-4';
+            infoDiv.className = 'grid grid-cols-1 md:grid-cols-3 gap-4 mb-4';
             infoDiv.innerHTML = `
                 <div class="input-container border border-gray-300 rounded-md overflow-hidden">
                     <div class="bg-gray-50 px-4 py-2 text-sm text-gray-500">Número do CNPJ</div>
@@ -490,6 +456,11 @@ function calculateTotals() {
                 <div class="input-container border border-gray-300 rounded-md overflow-hidden">
                     <div class="bg-gray-50 px-4 py-2 text-sm text-gray-500">Nome da Empresa</div>
                     <input type="text" class="w-full px-4 py-2 cnpj-name" placeholder="Nome da Empresa" value="${cnpj.name}" data-cnpj-index="${cnpjIndex}">
+                </div>
+                
+                <div class="input-container border border-gray-300 rounded-md overflow-hidden">
+                    <div class="bg-gray-50 px-4 py-2 text-sm text-gray-500">Devoluções (R$)</div>
+                    <input type="number" step="0.01" class="w-full px-4 py-2 cnpj-returns" placeholder="0.00" value="${cnpj.returns}" data-cnpj-index="${cnpjIndex}">
                 </div>
             `;
             
@@ -517,15 +488,11 @@ function calculateTotals() {
                 
                 // Campos de entrada para os valores da loja
                 const storeInputs = document.createElement('div');
-                storeInputs.className = 'grid grid-cols-1 md:grid-cols-3 gap-3';
+                storeInputs.className = 'grid grid-cols-1 md:grid-cols-2 gap-3';
                 storeInputs.innerHTML = `
                     <div class="input-container border border-gray-300 rounded-md overflow-hidden">
                         <div class="bg-gray-50 px-3 py-1 text-sm text-gray-500">Faturamento (R$)</div>
                         <input type="number" step="0.01" class="w-full px-3 py-1 store-revenue" placeholder="0.00" value="${store.revenue}" data-cnpj-index="${cnpjIndex}" data-store-index="${storeIndex}">
-                    </div>
-                    <div class="input-container border border-gray-300 rounded-md overflow-hidden">
-                        <div class="bg-gray-50 px-3 py-1 text-sm text-gray-500">Devoluções (R$)</div>
-                        <input type="number" step="0.01" class="w-full px-3 py-1 store-returns" placeholder="0.00" value="${store.returns}" data-cnpj-index="${cnpjIndex}" data-store-index="${storeIndex}">
                     </div>
                     <div class="input-container border border-gray-300 rounded-md overflow-hidden">
                         <div class="bg-gray-50 px-3 py-1 text-sm text-gray-500">Pedidos</div>
@@ -578,7 +545,6 @@ function calculateTotals() {
                 const newStore = {
                     name: storeName.trim(),
                     revenue: 0,
-                    returns: 0,
                     orders: 0
                 };
                 
@@ -614,7 +580,26 @@ function calculateTotals() {
         // Função para remover uma loja de um CNPJ
         function removeStore(cnpjIndex, storeIndex) {
             if (confirm("Tem certeza que deseja remover esta loja?")) {
+                const storeName = data.cnpjs[cnpjIndex].stores[storeIndex].name;
                 data.cnpjs[cnpjIndex].stores.splice(storeIndex, 1);
+                
+                // Verificar se a loja ainda é usada em outros CNPJs
+                let storeStillUsed = false;
+                for (const cnpj of data.cnpjs) {
+                    if (cnpj.stores.some(store => store.name === storeName)) {
+                        storeStillUsed = true;
+                        break;
+                    }
+                }
+                
+                // Se a loja não é mais usada, remover da lista global
+                if (!storeStillUsed) {
+                    const storeIndex = data.stores.indexOf(storeName);
+                    if (storeIndex !== -1) {
+                        data.stores.splice(storeIndex, 1);
+                    }
+                }
+                
                 renderCnpjConfig();
                 updateReport();
             }
@@ -663,20 +648,19 @@ function calculateTotals() {
                 });
             });
             
+            document.querySelectorAll('.cnpj-returns').forEach(input => {
+                input.addEventListener('change', function() {
+                    const cnpjIndex = parseInt(this.dataset.cnpjIndex);
+                    data.cnpjs[cnpjIndex].returns = this.value;
+                    updateReport();
+                });
+            });
+            
             document.querySelectorAll('.store-revenue').forEach(input => {
                 input.addEventListener('change', function() {
                     const cnpjIndex = parseInt(this.dataset.cnpjIndex);
                     const storeIndex = parseInt(this.dataset.storeIndex);
                     data.cnpjs[cnpjIndex].stores[storeIndex].revenue = this.value;
-                    updateReport();
-                });
-            });
-            
-            document.querySelectorAll('.store-returns').forEach(input => {
-                input.addEventListener('change', function() {
-                    const cnpjIndex = parseInt(this.dataset.cnpjIndex);
-                    const storeIndex = parseInt(this.dataset.storeIndex);
-                    data.cnpjs[cnpjIndex].stores[storeIndex].returns = this.value;
                     updateReport();
                 });
             });
@@ -692,7 +676,7 @@ function calculateTotals() {
         }
 
         // Função para adicionar uma nova loja global
-        function addNewStore() {
+        function addNewGlobalStore() {
             const storeName = prompt("Digite o nome da nova loja:");
             
             if (storeName && storeName.trim() !== "") {
@@ -710,7 +694,6 @@ function calculateTotals() {
                     cnpj.stores.push({
                         name: storeName.trim(),
                         revenue: 0,
-                        returns: 0,
                         orders: 0
                     });
                 });
@@ -723,6 +706,11 @@ function calculateTotals() {
 
         // Função para salvar os dados no localStorage
         function saveData() {
+            // Atualizar dados de fluxo de caixa
+            data.cashFlow.previousPixBalance = document.getElementById('previousPixBalance').value;
+            data.cashFlow.monthlyIncome = document.getElementById('monthlyIncome').value;
+            data.cashFlow.monthlyExpenses = document.getElementById('monthlyExpenses').value;
+            
             // Salvar no localStorage
             localStorage.setItem('reportData', JSON.stringify(data));
             localStorage.setItem('lastMonth', document.getElementById('monthSelector').value);
@@ -738,6 +726,34 @@ function calculateTotals() {
             
             if (savedData) {
                 data = JSON.parse(savedData);
+                
+                // Verificar e adicionar a propriedade 'returns' aos CNPJs se não existir
+                data.cnpjs.forEach(cnpj => {
+                    if (cnpj.returns === undefined) {
+                        cnpj.returns = 0;
+                    }
+                    
+                    // Remover a propriedade 'returns' das lojas se existir
+                    cnpj.stores.forEach(store => {
+                        if (store.returns !== undefined) {
+                            delete store.returns;
+                        }
+                    });
+                });
+                
+                // Verificar e adicionar a propriedade 'cashFlow' se não existir
+                if (!data.cashFlow) {
+                    data.cashFlow = {
+                        previousPixBalance: 0,
+                        monthlyIncome: 0,
+                        monthlyExpenses: 0
+                    };
+                }
+                
+                // Preencher os campos de fluxo de caixa
+                document.getElementById('previousPixBalance').value = data.cashFlow.previousPixBalance || 0;
+                document.getElementById('monthlyIncome').value = data.cashFlow.monthlyIncome || 0;
+                document.getElementById('monthlyExpenses').value = data.cashFlow.monthlyExpenses || 0;
             } else {
                 // Criar dados iniciais se não houver dados salvos
                 addNewCnpj();
@@ -757,7 +773,7 @@ function calculateTotals() {
             createRevenueByCnpjChart();
             createRevenueByStoreChart();
             createOrdersByStoreChart();
-            createReturnsByStoreChart();
+            createReturnsByCnpjChart();
         }
 
         // Inicializar o relatório
@@ -775,20 +791,13 @@ function calculateTotals() {
             document.getElementById('monthSelector').addEventListener('change', updateCurrentDate);
             document.getElementById('saveDataBtn').addEventListener('click', saveData);
             document.getElementById('addCnpjBtn').addEventListener('click', addNewCnpj);
-            document.getElementById('addStoreBtn').addEventListener('click', addNewStore);
+            document.getElementById('addGlobalStoreBtn').addEventListener('click', addNewGlobalStore);
+            
+            // Event listeners para os campos de fluxo de caixa
+            document.getElementById('previousPixBalance').addEventListener('change', updateReport);
+            document.getElementById('monthlyIncome').addEventListener('change', updateReport);
+            document.getElementById('monthlyExpenses').addEventListener('change', updateReport);
         }
 
         // Inicializar o relatório quando a página carregar
         document.addEventListener('DOMContentLoaded', initReport);
-
-
-        // Função para formatar os valores como número com separador de milhar e vírgula para decimal
-            function formatNumber(value) {
-                return new Intl.NumberFormat('pt-BR').format(value);  // Padrão do Brasil
-
-
-                // Atualizar os valores no HTML com a formatação correta
-document.getElementById('totalRevenue').innerText = `R$ ${formatNumber(totalRevenue)}`;
-document.getElementById('totalReturns').innerText = `R$ ${formatNumber(totalReturns)}`;
-document.getElementById('netRevenue').innerText = `R$ ${formatNumber(netRevenue)}`;
-}
