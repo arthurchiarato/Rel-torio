@@ -1,12 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Relatório financeiro personalizado para sua empresa. Visualize o desempenho mensal e mais.">
-<meta name="keywords" content="relatório, financeiro, mês, análise">
-    <title>Relatório Mensal</title>
+    <title>Relatório Mensal Personalizado</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -16,7 +13,7 @@
 <body>
     <div class="container mx-auto px-4 py-8 max-w-7xl">
         <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">Relatório Mensal</h1>
+            <h1 class="text-3xl font-bold text-gray-800">Relatório Financeiro Personalizado</h1>
             <div class="flex items-center gap-4">
                 <select id="monthSelector" class="bg-white border border-gray-300 rounded-md px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 no-print">
                     <option value="0">Janeiro</option>
@@ -43,13 +40,35 @@
         
         <div id="currentDate" class="text-lg text-gray-600 mb-8"></div>
         
+        <!-- Fluxo de Caixa -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8 no-print">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Fluxo de Caixa</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="input-container border border-gray-300 rounded-md overflow-hidden">
+                    <div class="bg-gray-50 px-4 py-2 text-sm text-gray-500">Saldo PIX Anterior (R$)</div>
+                    <input type="number" step="0.01" id="previousPixBalance" class="w-full px-4 py-2" placeholder="0.00" value="0">
+                </div>
+                
+                <div class="input-container border border-gray-300 rounded-md overflow-hidden">
+                    <div class="bg-gray-50 px-4 py-2 text-sm text-gray-500">Entradas do Mês (R$)</div>
+                    <input type="number" step="0.01" id="monthlyIncome" class="w-full px-4 py-2" placeholder="0.00" value="0">
+                </div>
+                
+                <div class="input-container border border-gray-300 rounded-md overflow-hidden">
+                    <div class="bg-gray-50 px-4 py-2 text-sm text-gray-500">Saídas do Mês (R$)</div>
+                    <input type="number" step="0.01" id="monthlyExpenses" class="w-full px-4 py-2" placeholder="0.00" value="0">
+                </div>
+            </div>
+        </div>
+        
         <!-- Configuração Personalizada -->
         <div class="bg-white rounded-xl shadow-md p-6 mb-8 no-print">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-semibold text-gray-800">Configuração Personalizada</h2>
                 <div class="flex gap-3">
                     <button id="addCnpjBtn" class="bg-blue-500 text-white px-3 py-1 rounded-md text-sm">+ Adicionar CNPJ</button>
-                    <button id="addStoreBtn" class="bg-purple-500 text-white px-3 py-1 rounded-md text-sm">+ Adicionar Loja</button>
+                    <button id="addGlobalStoreBtn" class="bg-purple-500 text-white px-3 py-1 rounded-md text-sm">+ Adicionar Loja</button>
                 </div>
             </div>
             
@@ -62,7 +81,7 @@
         <div class="bg-white rounded-xl shadow-md p-6 mb-8">
             <h2 class="text-2xl font-semibold text-gray-800 mb-6">Resumo Geral</h2>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div class="card bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
                     <h3 class="text-lg font-medium opacity-80">Faturamento Total</h3>
                     <p class="text-3xl font-bold mt-2" id="totalRevenue">R$ 0,00</p>
@@ -80,12 +99,44 @@
                     <p class="text-3xl font-bold mt-2" id="netRevenue">R$ 0,00</p>
                     <p class="text-sm mt-2 opacity-80" id="netRevenueDetail"></p>
                 </div>
-                
-                <div class="card bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
-                    <h3 class="text-lg font-medium opacity-80">Total de Pedidos</h3>
-                    <p class="text-3xl font-bold mt-2" id="totalOrders">0</p>
-                    <p class="text-sm mt-2 opacity-80" id="totalOrdersDetail"></p>
-                </div>
+            </div>
+        </div>
+        
+        <!-- Detalhamento do Fluxo de Caixa -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Detalhamento do Fluxo de Caixa</h2>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-700">
+                            <th class="py-3 px-4 text-left">Descrição</th>
+                            <th class="py-3 px-4 text-right">Valor (R$)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b">
+                            <td class="py-3 px-4 font-medium">Saldo PIX Anterior</td>
+                            <td class="py-3 px-4 text-right" id="cashFlowPreviousBalance">R$ 0,00</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="py-3 px-4 font-medium">Entradas do Mês</td>
+                            <td class="py-3 px-4 text-right text-green-600" id="cashFlowIncome">R$ 0,00</td>
+                        </tr>
+                        <tr class="border-b">
+                            <td class="py-3 px-4 font-medium">Saídas do Mês</td>
+                            <td class="py-3 px-4 text-right text-red-600" id="cashFlowExpenses">R$ 0,00</td>
+                        </tr>
+                        <tr class="border-b bg-gray-50">
+                            <td class="py-3 px-4 font-medium">Fluxo de Caixa (Entradas - Saídas)</td>
+                            <td class="py-3 px-4 text-right" id="cashFlowNet">R$ 0,00</td>
+                        </tr>
+                        <tr class="bg-gray-100 font-semibold">
+                            <td class="py-3 px-4">Saldo Final</td>
+                            <td class="py-3 px-4 text-right" id="cashFlowFinal">R$ 0,00</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
         
@@ -139,11 +190,11 @@
                 </div>
             </div>
             
-            <!-- Devoluções por Loja -->
+            <!-- Devoluções por CNPJ -->
             <div class="bg-white rounded-xl shadow-md p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Devoluções por Loja</h2>
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Devoluções por CNPJ</h2>
                 <div class="h-80">
-                    <canvas id="returnsByStoreChart"></canvas>
+                    <canvas id="returnsByCnpjChart"></canvas>
                 </div>
             </div>
         </div>
@@ -156,11 +207,9 @@
                 <table class="min-w-full bg-white">
                     <thead>
                         <tr class="bg-gray-100 text-gray-700">
-                            <th class="py-3 px-4 text-left">CNPJ</th>
+                            <th class="py-3 px-4 text-left">Empresa</th>
                             <th class="py-3 px-4 text-left">Loja</th>
                             <th class="py-3 px-4 text-right">Faturamento</th>
-                            <th class="py-3 px-4 text-right">Devoluções</th>
-                            <th class="py-3 px-4 text-right">Faturamento Líquido</th>
                             <th class="py-3 px-4 text-right">Pedidos</th>
                             <th class="py-3 px-4 text-right">Ticket Médio</th>
                         </tr>
@@ -172,8 +221,10 @@
             </div>
         </div>
     </div>
-  
-        <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'943d4ecd81d0f1b1',t:'MTc0NzkyNzMzNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+
+   
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9505ab9ee343a4d2',t:'MTc1MDAyODI4OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+
 
             <script src="script.js"></script>
 
